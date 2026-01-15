@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fantasy Results</title>
+</head>
+<body>
+
+<h2>Fantasy Team Results</h2>
+
+{% if error %}
+    <p style="color:red">{{ error }}</p>
+{% else %}
+
+<table border="1" cellpadding="6">
+    <tr>
+        <th>Player</th>
+        <th>Team</th>
+        <th>Role</th>
+        <th>Captain</th>
+        <th>Vice-Captain</th>
+        <th>Points</th>
+    </tr>
+
+    {% for p in players %}
+    <tr>
+        <td>{{ p.player_name }}</td>
+        <td>{{ p.team_name }}</td>
+        <td>{{ p.role }}</td>
+        <td>{% if p.is_captain %}⭐{% endif %}</td>
+        <td>{% if p.is_vice_captain %}⭐{% endif %}</td>
+        <td>{{ p.final_points }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<br>
+<h3>Total Fantasy Points: {{ total_points }}</h3>
+
+{% endif %}
+
+<br>
+<a href="{% url 'view_fantasy_team' match_id %}">Back to My Team</a>
+
+</body>
+</html>

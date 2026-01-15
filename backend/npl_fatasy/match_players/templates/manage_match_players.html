@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Match Players</title>
+</head>
+<body>
+
+<h2>
+    Match {{ match.id }} |
+    {{ match.team1_name }} vs {{ match.team2_name }}
+</h2>
+
+<p>Date: {{ match.date }}</p>
+
+<form method="post">
+    {% csrf_token %}
+
+    <table border="1" cellpadding="8">
+        <tr>
+            <th>Player</th>
+            <th>Team</th>
+            <th>Playing?</th>
+        </tr>
+
+        {% for player in players %}
+        <tr>
+            <td>{{ player.player_name }}</td>
+            <td>{{ player.team_name }}</td>
+            <td>
+                <input type="checkbox"
+                       name="playing"
+                       value="{{ player.player_id }}"
+                       {% if player.is_playing %}checked{% endif %}>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <br>
+    <button type="submit">Save Squad</button>
+</form>
+
+<br>
+<a href="{% url 'match_list' %}">Back to Matches</a>
+
+</body>
+</html>

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Players of {{ acronym }}</title>
+</head>
+<body>
+
+<h2>Players of Team: {{ acronym }}</h2>
+
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Player ID</th>
+        <th>Name</th>
+        <th>Role</th>
+        <th>Cost</th>
+        <th>Team</th>
+    </tr>
+
+    {% for player in players %}
+    <tr>
+        <td>{{ player.player_id }}</td>
+        <td>{{ player.player_name }}</td>
+        <td>{{ player.role }}</td>
+        <td>{{ player.cost }}</td>
+        <td>{{ player.team_name }}</td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="5">No players found for this team</td>
+    </tr>
+    {% endfor %}
+</table>
+
+</body>
+</html>

@@ -1,0 +1,21 @@
+<h2>Matches</h2>
+
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Date</th>
+        <th>Teams</th>
+        <th>Fantasy</th>
+    </tr>
+
+    {% for m in matches %}
+    <tr>
+        <td>{{ m.match_date }}</td>
+        <td>{{ m.team1 }} vs {{ m.team2 }}</td>
+        <td>
+            <a href="{% url 'create_fantasy_team' m.match_id %}">
+                Create / Edit Fantasy Team
+            </a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>

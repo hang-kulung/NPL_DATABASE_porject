@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teams</title>
+</head>
+<body>
+
+<h2>Team List</h2>
+
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Team ID</th>
+        <th>Team Name</th>
+        <th>Acronym</th>
+    </tr>
+
+    {% for team in teams %}
+    <tr>
+        <td>{{ team.team_id }}</td>
+        <td>{{ team.team_name }}</td>
+        <!-- Make acronym clickable -->
+        <td>
+            <a href="{% url 'players_by_team' team.acronym %}">
+                {{ team.acronym }}
+            </a>
+        </td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="3">No teams found</td>
+    </tr>
+    {% endfor %}
+
+</table>
+
+</body>
+</html>
