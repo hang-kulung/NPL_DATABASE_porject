@@ -1,4 +1,5 @@
 backend/myenv/
 backend/npl_fatasy/.env
 files/
+.venv/
 .venv
