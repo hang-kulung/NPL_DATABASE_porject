@@ -1,8 +1,8 @@
 from django.http import JsonResponse
-from django.shortcuts import redirect
 from django.db import connection
 from users.auth import login_required
 import json
+
 
 def dictfetchall(cursor):
     columns = [col[0] for col in cursor.description]
@@ -47,13 +47,10 @@ def create_fantasy_team(request, match_id):
                 (fantasy_team_id, user_id, match_id, total_points)
                 VALUES (%s, %s, %s, 0)
             """, [fantasy_team_id, user_id, match_id])
-            return JsonResponse({
-                "status": "created",
-                "redirect": "select"
-            })
 
-    return JsonResponse({"status": "exists",
-        "redirect": "edit"})
+            return JsonResponse({"status": "created"})
+
+    return JsonResponse({"status": "exists"})
 
 
 @login_required
@@ -96,7 +93,29 @@ def select_players_api(request, match_id):
 
             players = dictfetchall(cursor)
 
-        return JsonResponse({"players": players})
+            cursor.execute("""
+                SELECT
+                    player_id,
+                    is_captain,
+                    is_vice_captain
+                FROM fantasy_team_players
+                WHERE fantasy_team_id = %s
+            """, [fantasy_team_id])
+
+            rows = dictfetchall(cursor)
+
+        existing_team = None
+        if rows:
+            existing_team = {
+                "players": [r["player_id"] for r in rows],
+                "captain": next((r["player_id"] for r in rows if r["is_captain"]), None),
+                "vice_captain": next((r["player_id"] for r in rows if r["is_vice_captain"]), None),
+            }
+
+        return JsonResponse({
+            "players": players,
+            "existing_team": existing_team
+        })
 
     if request.method == "POST":
         data = json.loads(request.body)
@@ -104,20 +123,18 @@ def select_players_api(request, match_id):
         captain = data.get("captain")
         vice_captain = data.get("vice_captain")
 
-        # ---------- VALIDATIONS ----------
         if len(selected_players) != 7:
-            return JsonResponse({"error": "You must select exactly 7 players."}, status=400)
+            return JsonResponse({"error": "Select exactly 7 players"}, status=400)
 
         if not captain or not vice_captain:
-            return JsonResponse({"error": "Captain and Vice-Captain are required."}, status=400)
+            return JsonResponse({"error": "Captain and Vice-Captain required"}, status=400)
 
         if captain == vice_captain:
-            return JsonResponse({"error": "Captain and Vice-Captain must be different."}, status=400)
+            return JsonResponse({"error": "Captain and VC must be different"}, status=400)
 
         if captain not in selected_players or vice_captain not in selected_players:
-            return JsonResponse({"error": "Captain and Vice-Captain must be selected players."}, status=400)
+            return JsonResponse({"error": "Captain/VC must be selected players"}, status=400)
 
-        # Fetch selected player details
         with connection.cursor() as cursor:
             cursor.execute("""
                 SELECT player_id, role, team_id, cost
@@ -136,16 +153,15 @@ def select_players_api(request, match_id):
             role_count[p["role"]] = role_count.get(p["role"], 0) + 1
             total_cost += p["cost"]
 
-        if any(count > 4 for count in team_count.values()):
-            return JsonResponse({"error": "Maximum 4 players allowed from a single team."}, status=400)
+        if any(v > 4 for v in team_count.values()):
+            return JsonResponse({"error": "Max 4 players per team"}, status=400)
 
-        if any(count > 3 for count in role_count.values()):
-            return JsonResponse({"error": "Maximum 3 players allowed per role."}, status=400)
+        if any(v > 3 for v in role_count.values()):
+            return JsonResponse({"error": "Max 3 players per role"}, status=400)
 
         if total_cost > 60:
-            return JsonResponse({"error": f"Total cost exceeded! Current cost: {total_cost}"}, status=400)
+            return JsonResponse({"error": "Budget exceeded"}, status=400)
 
-        # ---------- SAVE SELECTION ----------
         with connection.cursor() as cursor:
             cursor.execute("""
                 DELETE FROM fantasy_team_players
@@ -153,14 +169,16 @@ def select_players_api(request, match_id):
             """, [fantasy_team_id])
 
             for pid in selected_players:
-                is_captain = (pid == captain)
-                is_vice_captain = (pid == vice_captain)
-
                 cursor.execute("""
                     INSERT INTO fantasy_team_players
                     (fantasy_team_id, player_id, is_captain, is_vice_captain)
                     VALUES (%s, %s, %s, %s)
-                """, [fantasy_team_id, pid, is_captain, is_vice_captain])
+                """, [
+                    fantasy_team_id,
+                    pid,
+                    pid == captain,
+                    pid == vice_captain
+                ])
 
         return JsonResponse({"success": True})
 
@@ -207,7 +225,6 @@ def fantasy_team_results_api(request, match_id):
                 p.role,
                 ftp.is_captain,
                 ftp.is_vice_captain,
-
                 COALESCE(ps.runs, 0) AS runs,
                 COALESCE(ps.run_rate, 0) AS run_rate,
                 COALESCE(ps.econ, 0) AS econ,
@@ -215,32 +232,22 @@ def fantasy_team_results_api(request, match_id):
                 COALESCE(ps.sixes, 0) AS sixes,
                 COALESCE(ps.fours, 0) AS fours,
                 COALESCE(ps.catches, 0) AS catches,
-
                 (
                     (COALESCE(ps.runs,0) / 10.0) +
                     (COALESCE(ps.run_rate,0) / 100.0) +
-                    (CASE 
-                        WHEN COALESCE(ps.econ,0) > 0 THEN 10.0 / ps.econ
-                        ELSE 0
-                     END) +
+                    (CASE WHEN COALESCE(ps.econ,0) > 0 THEN 10.0 / ps.econ ELSE 0 END) +
                     (COALESCE(ps.wickets,0) * 2) +
                     (COALESCE(ps.sixes,0)) +
                     (COALESCE(ps.fours,0) * 0.5) +
                     (COALESCE(ps.catches,0))
                 ) AS base_points
-
             FROM fantasy_team_players ftp
             JOIN players p ON ftp.player_id = p.player_id
             JOIN teams t ON p.team_id = t.team_id
-            JOIN match_players mp 
-                 ON mp.player_id = p.player_id
-                AND mp.match_id = %s
+            JOIN match_players mp ON mp.player_id = p.player_id AND mp.match_id = %s
             LEFT JOIN player_stats ps ON ps.mp_id = mp.mp_id
             WHERE ftp.fantasy_team_id = %s
-            ORDER BY
-                ftp.is_captain DESC,
-                ftp.is_vice_captain DESC,
-                p.player_name
+            ORDER BY ftp.is_captain DESC, ftp.is_vice_captain DESC, p.player_name
         """, [match_id, fantasy_team_id])
 
         players = dictfetchall(cursor)

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { CalendarDays } from "lucide-react";
-import { NavLink } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { getCSRF, getCookie } from "./csrf";
 
 interface Match {
   id: number;
@@ -14,19 +15,19 @@ function Upcomingmatches() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const navigate = useNavigate();
+
   useEffect(() => {
     const fetchMatches = async () => {
       try {
         const res = await fetch("http://127.0.0.1:8000/matches/", {
-          credentials: "include", // safe to keep
+          credentials: "include",
         });
 
-        if (!res.ok) {
-          throw new Error("Failed to fetch matches");
-        }
+        if (!res.ok) throw new Error("Failed to fetch matches");
 
         const data = await res.json();
-        setMatches(data);
+        setMatches(data.matches ?? data);
       } catch (err: any) {
         setError(err.message || "Something went wrong");
       } finally {
@@ -37,6 +38,30 @@ function Upcomingmatches() {
     fetchMatches();
   }, []);
 
+  const handleCreateTeam = async (matchId: number) => {
+    await getCSRF();
+    const csrfToken = getCookie("csrftoken");
+
+    const res = await fetch(
+      `http://127.0.0.1:8000/fantasy/create/${matchId}/`,
+      {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          ...(csrfToken && { "X-CSRFToken": csrfToken }),
+        },
+      }
+    );
+
+    const data = await res.json();
+    console.log("POST response:", data);
+    if (data.status === "created") {
+      navigate(`/fantasy/select/${matchId}`);
+    } else if (data.status === "exists") {
+      navigate(`/fantasy/view/${matchId}`);
+    }
+  };
+
   return (
     <section className="max-w-7xl mx-auto px-6 py-14">
       <div className="flex items-center justify-between mb-6">
@@ -46,17 +71,14 @@ function Upcomingmatches() {
         <CalendarDays className="text-red-600" />
       </div>
 
-      {/* Loading */}
       {loading && (
         <p className="text-gray-500 text-center">Loading matches...</p>
       )}
 
-      {/* Error */}
       {error && (
         <p className="text-red-600 text-center">{error}</p>
       )}
 
-      {/* Matches */}
       {!loading && !error && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {matches.map((match) => (
@@ -67,6 +89,7 @@ function Upcomingmatches() {
               <h3 className="font-semibold text-gray-800 text-lg">
                 {match.teams}
               </h3>
+
               <p className="text-sm text-gray-500 mt-1">
                 {match.time}
               </p>
@@ -75,12 +98,13 @@ function Upcomingmatches() {
                 <span className="text-xs px-3 py-1 rounded-full bg-green-100 text-green-700">
                   {match.status}
                 </span>
-                <NavLink
-                  to={`/fantasy/create/${match.id}`}
-                  className="text-red-600 font-semibold hover:underline"
+
+                <button
+                  onClick={() => handleCreateTeam(match.id)}
+                  className="text-red-600 cursor-pointer font-semibold hover:underline"
                 >
                   Create Team →
-                </NavLink>
+                </button>
               </div>
             </div>
           ))}

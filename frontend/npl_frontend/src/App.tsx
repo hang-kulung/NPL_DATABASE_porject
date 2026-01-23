@@ -20,13 +20,20 @@ function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/create/:matchId" element={<MatchTeamCreator />} />
           <Route path="/my-teams" element={<MyTeams />} />
-          <Route path="/login" element={<Login />}/>
-          <Route path="/register" element={<Register />}/>
-          <Route path="/players" element={<Players />}/>
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/players" element={<Players />} />
           <Route path="/fantasy" element={<FantasyMatchList />} />
-          <Route path="/fantasy/create/:matchId" element={<FantasySelectPlayers />} />
+
+          <Route
+            path="/fantasy/select/:matchId"
+            element={<FantasySelectPlayers />}
+          />
           <Route path="/fantasy/view/:matchId" element={<FantasyViewTeam />} />
-          <Route path="/fantasy/results/:matchId" element={<FantasyResults />} />
+          <Route
+            path="/fantasy/results/:matchId"
+            element={<FantasyResults />}
+          />
         </Routes>
       </div>
     </>
