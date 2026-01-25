@@ -26,5 +26,8 @@ urlpatterns = [
     path('users/', include('users.urls')),
     path('fantasy/', include('fantasy_teams.urls')),
     path('player_stats/', include('player_stats.urls')),
+    path('leaderboard/',include('leaderboard.urls')),
+
     path('admin_panel/', include('admin_panel.urls')),
+
 ]

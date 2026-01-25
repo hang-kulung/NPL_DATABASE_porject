@@ -2,8 +2,9 @@ from django.http import JsonResponse
 from django.db import connection
 from users.auth import login_required
 import json
-
-
+from leaderboard.views import update_overall_leaderboard_for_user
+from leaderboard.views import update_all_overall_ranks
+from leaderboard.views import update_matchday_leaderboard
 def dictfetchall(cursor):
     columns = [col[0] for col in cursor.description]
     return [dict(zip(columns, row)) for row in cursor.fetchall()]
@@ -208,7 +209,9 @@ def fantasy_team_api(request, match_id):
         """, [fantasy_team_id])
 
         players = dictfetchall(cursor)
-
+    update_overall_leaderboard_for_user(user_id)
+    update_all_overall_ranks()
+    update_matchday_leaderboard(match_id)
     return JsonResponse({"players": players})
 
 

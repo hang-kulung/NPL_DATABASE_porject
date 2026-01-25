@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'users',
     'fantasy_teams',
     'player_stats',
+    'leaderboard'
 ]
 
 MIDDLEWARE = [
