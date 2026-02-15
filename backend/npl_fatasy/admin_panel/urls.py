@@ -6,6 +6,7 @@ app_name = "admin_panel"
 urlpatterns = [
     path("login/", views.admin_login_api, name="admin_login_api"),
     path("session/", views.admin_session_api, name="admin_session_api"),
+
     # ===========================
     # TEAMS
     # ===========================
@@ -30,4 +31,15 @@ urlpatterns = [
     path("matches/add/", views.add_match_api, name="add_match_api"),
     path("matches/<int:match_id>/edit/", views.edit_match_api, name="edit_match_api"),
     path("matches/<int:match_id>/delete/", views.delete_match_api, name="delete_match_api"),
+
+    # MANAGE MATCH_PLAYERS
+    path("match_players/<int:match_id>/", views.match_players_api),
+    path("match_players/<int:match_id>/update/", views.update_match_players_api),
+
+    # MANAGE PLAYER STATS
+    path("matches/<int:match_id>/stats/", views.manage_player_stats_api),
+
+    # CALCULATE MATCH RESULTS
+    path("matches/<int:match_id>/calculate_result/", views.calculate_match_results_api),
+
 ]

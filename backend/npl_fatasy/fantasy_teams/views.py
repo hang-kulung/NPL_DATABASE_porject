@@ -2,15 +2,12 @@ from django.http import JsonResponse
 from django.db import connection
 from users.auth import login_required
 import json
-from leaderboard.views import update_overall_leaderboard_for_user
-from leaderboard.views import update_all_overall_ranks
-from leaderboard.views import update_matchday_leaderboard
+
 def dictfetchall(cursor):
     columns = [col[0] for col in cursor.description]
     return [dict(zip(columns, row)) for row in cursor.fetchall()]
 
 
-@login_required
 def match_list_api(request):
     with connection.cursor() as cursor:
         cursor.execute("""
@@ -214,7 +211,6 @@ def fantasy_team_api(request, match_id):
     update_matchday_leaderboard(match_id)
     return JsonResponse({"players": players})
 
-
 @login_required
 def fantasy_team_results_api(request, match_id):
     user_id = request.session["user_id"]
@@ -228,34 +224,35 @@ def fantasy_team_results_api(request, match_id):
                 p.role,
                 ftp.is_captain,
                 ftp.is_vice_captain,
-                COALESCE(ps.runs, 0) AS runs,
-                COALESCE(ps.run_rate, 0) AS run_rate,
-                COALESCE(ps.econ, 0) AS econ,
-                COALESCE(ps.wickets, 0) AS wickets,
-                COALESCE(ps.sixes, 0) AS sixes,
-                COALESCE(ps.fours, 0) AS fours,
-                COALESCE(ps.catches, 0) AS catches,
+                ft.total_points,
                 (
                     (COALESCE(ps.runs,0) / 10.0) +
                     (COALESCE(ps.run_rate,0) / 100.0) +
-                    (CASE WHEN COALESCE(ps.econ,0) > 0 THEN 10.0 / ps.econ ELSE 0 END) +
+                    (CASE 
+                        WHEN COALESCE(ps.econ,0) > 0 
+                        THEN 10.0 / ps.econ 
+                        ELSE 0 
+                    END) +
                     (COALESCE(ps.wickets,0) * 2) +
                     (COALESCE(ps.sixes,0)) +
                     (COALESCE(ps.fours,0) * 0.5) +
                     (COALESCE(ps.catches,0))
                 ) AS base_points
             FROM fantasy_team_players ftp
+            JOIN fantasy_teams ft 
+                ON ft.fantasy_team_id = ftp.fantasy_team_id
             JOIN players p ON ftp.player_id = p.player_id
             JOIN teams t ON p.team_id = t.team_id
-            JOIN match_players mp ON mp.player_id = p.player_id AND mp.match_id = %s
+            JOIN match_players mp 
+                ON mp.player_id = p.player_id 
+               AND mp.match_id = %s
             LEFT JOIN player_stats ps ON ps.mp_id = mp.mp_id
             WHERE ftp.fantasy_team_id = %s
-            ORDER BY ftp.is_captain DESC, ftp.is_vice_captain DESC, p.player_name
+            ORDER BY ftp.is_captain DESC, ftp.is_vice_captain DESC
         """, [match_id, fantasy_team_id])
 
         players = dictfetchall(cursor)
 
-    total_points = 0
     for p in players:
         if p["is_captain"]:
             p["final_points"] = round(p["base_points"] * 2, 2)
@@ -264,9 +261,9 @@ def fantasy_team_results_api(request, match_id):
         else:
             p["final_points"] = round(p["base_points"], 2)
 
-        total_points += p["final_points"]
+    total_points = players[0]["total_points"] if players else 0
 
     return JsonResponse({
         "players": players,
-        "total_points": round(total_points, 2)
+        "total_points": total_points
     })

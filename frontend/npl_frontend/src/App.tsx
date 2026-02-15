@@ -19,6 +19,11 @@ import AdminTeams from "./admin/Teams";
 import AdminPlayers from "./admin/Players";
 import AdminMatches from "./admin/Matches";
 import AdminNavbar from "./admin/Navbar";
+import AdminMatchPlayers from "./admin/MatchPlayer"; 
+import AdminMatchStats from "./admin/MatchStats.tsx";
+
+
+
 import Upcomingmatches from "./components/Upcomingmatches.tsx";
 import MatchdayLeaderboard from "./components/Matchdayleaderboard.tsx";
 import OverallLeaderboard from "./components/Leaderboard.tsx";
@@ -100,7 +105,26 @@ function App() {
               </AdminProtectedRoute>
             }
           />
+          <Route
+            path="/admin/matches/:matchId/players"
+            element={
+              <AdminProtectedRoute>
+                <AdminMatchPlayers />
+              </AdminProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/matches/:matchId/stats"
+            element={
+              <AdminProtectedRoute>
+                <AdminMatchStats />
+              </AdminProtectedRoute>
+            }
+          />
+
+
         </Routes>
+        
       </div>
     </>
   );
