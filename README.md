@@ -60,7 +60,7 @@ The main objective of this project is:
 ---
 
 ## Database Tables Scheme
-![Database Schema](images/NPLdatabaseSchema.png)
+![Database Schema](NPLdatabaseSchema.png)
 
 
 Tables:
@@ -185,4 +185,5 @@ npm run dev
 - Frontend: https://npl-fantasy.vercel.app/
 - Backend: https://npl-fantasy-backend.vercel.app/
 - Demo Video: 
+
 
