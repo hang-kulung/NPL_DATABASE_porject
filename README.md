@@ -184,6 +184,7 @@ npm run dev
 ## Links
 - Frontend: https://npl-fantasy.vercel.app/
 - Backend: https://npl-fantasy-backend.vercel.app/
-- Demo Video: 
+- Demo Video: https://drive.google.com/file/d/1oZxZV0uD0ccnebHVLHkKLeQ9mQBv1U6E/view?usp=sharing
+
 
 
