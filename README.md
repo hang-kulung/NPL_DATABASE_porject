@@ -11,8 +11,8 @@ The system allows users to create fantasy cricket teams for NPL matches, manage 
 ## Project Objective
 
 The main objective of this project is:
-i. To build a interactive web application for NPL fantasy league.
-ii. To design a well structured database for NPL fantasy league using PostreSQL.
+- To build a interactive web application for NPL fantasy league.
+- To design a well structured database for NPL fantasy league using PostreSQL.
 
 ---
 
@@ -153,14 +153,14 @@ After calculating base points:
 
 ## 🛠️ Installation Guide
 
-### 1 Clone the Repository
+### 1. Clone the Repository
 
 ```bash
 git clone https://github.com/hang-kulung/NPL_DATABASE_porject.git
 cd NPL_DATABASE_porject
 ```
 
-### 2 Backend Setup
+### 2. Backend Setup
 ```bash
 cd backend
 pip install -r requirements.txt
@@ -169,7 +169,7 @@ python manage.py migrate
 python manage.py runserver
 ```
 
-### 3 Frontend Setup
+### 3. Frontend Setup
 ```bash
 cd frontend/npl_frontend
 npm install
