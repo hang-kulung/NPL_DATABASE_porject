@@ -74,7 +74,7 @@ Tables:
 - fantasy_team_players
 - leaderboard
 
-The schema includes proper foreign key relationships and constraints to maintain data integrity.
+> The schema includes proper foreign key relationships and constraints to maintain data integrity.
 
 ---
 
@@ -97,7 +97,7 @@ The following rules apply when selecting players for a fantasy team:
 
 ---
 
-## 📈 Scoring Mechanism
+## Scoring Mechanism
 
 The fantasy points calculation is performed using match-based player statistics.
 All calculations are derived dynamically from player performance using backend logic.
@@ -115,7 +115,7 @@ Base Points =
 + (fours × 0.5)  
 + (catches)
 
-All null values are handled safely using `COALESCE` to prevent calculation errors.
+> All null values are handled safely using `COALESCE` to prevent calculation errors.
 
 ---
 
@@ -127,7 +127,7 @@ After calculating base points:
 - **Vice Captain** → Final Points = Base Points × 1.5  
 - **Other Players** → Final Points = Base Points  
 
-Final points are rounded to 2 decimal places.
+> Final points are rounded to 2 decimal places.
 
 ---
 
@@ -177,11 +177,11 @@ npm run dev
 ```
 
 ## Developed By
-[Ninamhang Kulung](https://github.com/hang-kulung) (THA079BCT023)
-[Prabesh Babu Adhikari](https://github.com/prabesh130) (THA079BCT026)
-[Suprem Khatri](https://github.com/supremkhatri) (THA079BCT047)    
+- [Ninamhang Kulung](https://github.com/hang-kulung) (THA079BCT023)
+- [Prabesh Babu Adhikari](https://github.com/prabesh130) (THA079BCT026)
+- [Suprem Khatri](https://github.com/supremkhatri) (THA079BCT047)    
 
 ## Links
-Frontend: https://npl-fantasy.vercel.app/
-Backend: https://npl-fantasy-backend.vercel.app/
-Demo Video: 
+- Frontend: https://npl-fantasy.vercel.app/
+- Backend: https://npl-fantasy-backend.vercel.app/
+- Demo Video: 
